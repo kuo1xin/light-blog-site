@@ -14,6 +14,7 @@ export const useUserStore = defineStore('user', {
   },
   actions: {
     async login(form) {
+      this.clearSession()
       const res = await loginApi(form)
       this.token = res.data.token
       this.user = res.data.user
@@ -22,9 +23,14 @@ export const useUserStore = defineStore('user', {
     },
     async fetchUserInfo() {
       if (!this.token) return
-      const res = await getUserInfoApi()
-      this.user = res.data
-      localStorage.setItem('user', JSON.stringify(this.user))
+      try {
+        const res = await getUserInfoApi()
+        this.user = res.data
+        localStorage.setItem('user', JSON.stringify(this.user))
+      } catch (error) {
+        this.clearSession()
+        throw error
+      }
     },
     async logout() {
       try {

@@ -44,12 +44,18 @@ const router = createRouter({
 router.beforeEach(async (to) => {
   const store = useUserStore()
   if (store.token && !store.user) {
-    await store.fetchUserInfo()
+    try {
+      await store.fetchUserInfo()
+    } catch (error) {
+      if (to.meta.requiresAuth) {
+        return '/login'
+      }
+    }
   }
   if (to.meta.requiresAuth && !store.isLoggedIn) {
     return '/login'
   }
-  if (to.meta.guestOnly && store.isLoggedIn) {
+  if (to.meta.guestOnly && store.isLoggedIn && store.user) {
     return '/'
   }
   if (to.meta.role === 'admin' && !store.isAdmin) {
